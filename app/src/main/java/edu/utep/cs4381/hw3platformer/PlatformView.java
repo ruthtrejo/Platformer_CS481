@@ -61,8 +61,8 @@ public class PlatformView extends SurfaceView implements Runnable {
 
         // Initialize the viewport
         vp = new Viewport(screenWidth, screenHeight);
-        sm = new SoundManager();
-        sm.loadSound(context);
+        sm = SoundManager.instance(context);
+        //sm.loadSound(context);
         ps = new PlayerState();
 
         //loadLevel("LevelMountain", 118, 17);
@@ -136,7 +136,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                         switch (go.getType()) {
 
                             case 'c':
-                                sm.playSound("coin_pickup");
+                                sm.play(SoundManager.Sound.COIN_PICKUP);
                                 go.setActive(false);
                                 go.setVisible(false);
                                 ps.gotCredit();
@@ -147,7 +147,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                                 break;
 
                             case 'u':
-                                sm.playSound("gun_upgrade");
+                                sm.play(SoundManager.Sound.GUN_UPGRADE);
                                 go.setActive(false);
                                 go.setVisible(false);
                                 lm.player.bfg.upgradeRateOfFire();
@@ -161,7 +161,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                                 //extralife
                                 go.setActive(false);
                                 go.setVisible(false);
-                                sm.playSound("extra_life");
+                                sm.play(SoundManager.Sound.EXTRA_LIFE);
                                 ps.addLife();
                                 if (hit != 2) {// Any hit except feet
                                     // Now restore velocity that was removed by collision detection
@@ -172,7 +172,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                             case 'd':
                                 PointF location;
                                 //hit by drone
-                                sm.playSound("player_burn");
+                                sm.play(SoundManager.Sound.PLAYER_BURN);
                                 ps.loseLife();
                                 location = new PointF(ps.loadLocation().x, ps.loadLocation().y);
                                 lm.player.setWorldLocationX(location.x);
@@ -183,7 +183,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                             case 'g':
                             case 'f':
                                 //hit by guard
-                                sm.playSound("player_burn");
+                                sm.play(SoundManager.Sound.PLAYER_BURN);
                                 ps.loseLife();
                                 location = new PointF(ps.loadLocation().x, ps.loadLocation().y);
                                 lm.player.setWorldLocationX(location.x);
@@ -195,7 +195,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                                 Teleport teleport = (Teleport) go;
                                 Location t = teleport.getTarget();
                                 loadLevel(t.level, t.x, t.y);
-                                sm.playSound("teleport");
+                                sm.play(SoundManager.Sound.TELEPORT);
                                 break;
 
                             default:// Probably a regular tile
@@ -232,14 +232,14 @@ public class PlatformView extends SurfaceView implements Runnable {
                             if (go.getType() != 'g'
                                     && go.getType() != 'd') {
 
-                                sm.playSound("ricochet");
+                                sm.play(SoundManager.Sound.RICOCHET);
                             } else if (go.getType() == 'g') {
                                 // Knock the guard back
                                 go.setWorldLocationX(go.getWorldLocation().x + 2 * (lm.player.bfg.getDirection(i)));
-                                sm.playSound("hit_guard");
+                                sm.play(SoundManager.Sound.HIT_GUARD);
                             } else if (go.getType() == 'd') {
                                 //destroy the droid
-                                sm.playSound("explode");
+                                sm.play(SoundManager.Sound.EXPLODE);
                                 //permanently clip this drone
                                 go.setWorldLocation(-100, -100, 0);
                             }
@@ -282,7 +282,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                     lm.player.getWorldLocation().x > lm.mapWidth ||
                     lm.player.getWorldLocation().y > lm.mapHeight) {
 
-                sm.playSound("player_burn");
+                sm.play(SoundManager.Sound.PLAYER_BURN);
                 ps.loseLife();
                 PointF location = new PointF(ps.loadLocation().x, ps.loadLocation().y);
                 lm.player.setWorldLocationX(location.x);
@@ -383,43 +383,26 @@ public class PlatformView extends SurfaceView implements Runnable {
                                         go.getHeight()));
 
                         if (go.isAnimated()) {
-                            // Get the next frame of the bitmap
-                            // Rotate if necessary
-                            if (go.getFacing() == 1) {
-                                //Rotate
-
+                            if (go.getFacing() == GameObject.RIGHT) { // rotate and draw?
                                 Matrix flipper = new Matrix();
                                 flipper.preScale(-1, 1);
                                 Rect r = go.getRectToDraw(System.currentTimeMillis());
-                                Bitmap b = Bitmap.createBitmap(lm.bitmapsArray[lm.getBitmapIndex(go.getType())],
-                                        r.left,
-                                        r.top,
-                                        r.width(),
-                                        r.height(),
-                                        flipper,
-                                        true);
-
-                                canvas.drawBitmap(b,
-                                        toScreen2d.left,
-                                        toScreen2d.top, paint);
-
+                                Bitmap b = Bitmap.createBitmap(lm.getBitmap(go.getType()),
+                                        r.left, r.top, r.width(), r.height(), flipper, true);
+                                canvas.drawBitmap(b, r.left, r.top, paint);
                             } else {
-
-                                // draw it the regular way round
-                                canvas.drawBitmap(lm.bitmapsArray[lm.getBitmapIndex(go.getType())],
-                                        go.getRectToDraw(System.currentTimeMillis()),
-                                        toScreen2d, paint);
+                                canvas.drawBitmap(lm.getBitmap(go.getType()),
+                                        go.getRectToDraw(System.currentTimeMillis()), toScreen2d, paint);
                             }
-
-
-                        } else { // Just draw the whole bitmap
-                            canvas.drawBitmap(lm.bitmapsArray[lm.getBitmapIndex(go.getType())],
-                                    toScreen2d.left,
-                                    toScreen2d.top, paint);
                         }
+                        else { // no animation; just draw the whole bitmap
+                            canvas.drawBitmap(lm.getBitmap(go.getType()),
+                                    toScreen2d.left, toScreen2d.top, paint);
+                        }
+
                     }
                 }
-            }
+            }//end for loop
 
 
             //draw the bullets

@@ -1,116 +1,48 @@
 package edu.utep.cs4381.hw3platformer;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.media.AudioManager;
 import android.media.SoundPool;
-import android.util.Log;
-
-import java.io.IOException;
 
 public class SoundManager {
-    private SoundPool soundPool;
-    int shoot = -1;
-    int jump = -1;
-    int teleport = -1;
-    int coin_pickup = -1;
-    int gun_upgrade = -1;
-    int player_burn = -1;
-    int ricochet = -1;
-    int hit_guard = -1;
-    int explode = -1;
-    int extra_life = -1;
+    public enum Sound {
+        COIN_PICKUP(R.raw.coin_pickup),
+        EXPLODE(R.raw.explode),
+        EXTRA_LIFE(R.raw.extra_life),
+        GUN_UPGRADE(R.raw.gun_upgrade),
+        HIT_GUARD(R.raw.hit_guard),
+        JUMP(R.raw.jump),
+        RICOCHET(R.raw.ricochet),
+        SHOOT(R.raw.shoot),
+        TELEPORT(R.raw.teleport),
+        PLAYER_BURN(R.raw.player_burn);
 
-    public void loadSound(Context context){
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
-        try{
-            //Create objects of the 2 required classes
-            AssetManager assetManager = context.getAssets();
-            AssetFileDescriptor descriptor;
+        public final int resourceId;
+        private int soundId;
 
-            //create our fx
-            descriptor = assetManager.openFd("shoot.ogg");
-            shoot = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("jump.ogg");
-            jump = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("teleport.ogg");
-            teleport = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("coin_pickup.ogg");
-            coin_pickup = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("gun_upgrade.ogg");
-            gun_upgrade = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("player_burn.ogg");
-            player_burn = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("ricochet.ogg");
-            ricochet = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("hit_guard.ogg");
-            hit_guard = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("explode.ogg");
-            explode = soundPool.load(descriptor, 0);
-
-            descriptor = assetManager.openFd("extra_life.ogg");
-            extra_life = soundPool.load(descriptor, 0);
-
-
-        }catch(IOException e){
-            //Print an error message to the console
-            Log.e("error", "failed to load sound files");
+        Sound(int resourceId) {
+            this.resourceId = resourceId;
         }
     }
 
-    public void playSound(String sound){
-        switch (sound){
-            case "shoot":
-                soundPool.play(shoot, 1, 1, 0, 0, 1);
-                break;
+    private static SoundManager theInstance;
+    private final SoundPool soundPool;
 
-            case "jump":
-                soundPool.play(jump, 1, 1, 0, 0, 1);
-                break;
-
-            case "teleport":
-                soundPool.play(teleport, 1, 1, 0, 0, 1);
-                break;
-
-            case "coin_pickup":
-                soundPool.play(coin_pickup, 1, 1, 0, 0, 1);
-                break;
-
-            case "gun_upgrade":
-                soundPool.play(gun_upgrade, 1, 1, 0, 0, 1);
-                break;
-
-            case "player_burn":
-                soundPool.play(player_burn, 1, 1, 0, 0, 1);
-                break;
-
-            case "ricochet":
-                soundPool.play(ricochet, 1, 1, 0, 0, 1);
-                break;
-
-            case "hit_guard":
-                soundPool.play(hit_guard, 1, 1, 0, 0, 1);
-                break;
-
-            case "explode":
-                soundPool.play(explode, 1, 1, 0, 0, 1);
-                break;
-
-            case "extra_life":
-                soundPool.play(extra_life, 1, 1, 0, 0, 1);
-                break;
-
-
+    public SoundManager(Context ctx) {
+        soundPool = new SoundPool.Builder()
+                .setMaxStreams(Sound.values().length).build();
+        for (Sound sound: Sound.values()) {
+            sound.soundId = soundPool.load(ctx, sound.resourceId, 1);
         }
-
     }
-}//end SoundManager
+
+    public static SoundManager instance(Context context) {
+        if (theInstance == null) {
+            theInstance = new SoundManager(context);
+        }
+        return theInstance;
+    }
+
+    public void play(Sound sound) {
+        soundPool.play(sound.soundId, 1, 1, 0, 0, 1);
+    }
+}

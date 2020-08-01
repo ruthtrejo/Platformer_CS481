@@ -217,14 +217,14 @@ public class Player extends GameObject {
     }
 
     public void startJump(SoundManager sm) {
-        if (!isFalling) {//can't jump if falling
-            if (!isJumping) {//not already jumping
-                isJumping = true;
-                jumpTime = System.currentTimeMillis();
-                sm.playSound("jump");
-            }
+        if (!isFalling && // can't jump if falling
+                !isJumping) { // not already jumping?
+            isJumping = true;
+            jumpTime = System.currentTimeMillis();
+            sm.play(SoundManager.Sound.JUMP);
         }
     }
+
 
 }//end Player
 

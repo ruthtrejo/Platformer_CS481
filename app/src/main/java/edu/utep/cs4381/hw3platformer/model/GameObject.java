@@ -22,8 +22,8 @@ public abstract class GameObject {
 
     private float xVelocity;
     private float yVelocity;
-    final int LEFT = -1;
-    final int RIGHT = 1;
+    public static final int LEFT = -1;
+    public static final int RIGHT = 1;
     private int facing;
     private boolean moves =false;
 

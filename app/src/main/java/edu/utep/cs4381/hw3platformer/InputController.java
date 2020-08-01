@@ -62,7 +62,7 @@ public class InputController {
     }
 
 
-    public void handleInput(MotionEvent motionEvent,LevelManager l, SoundManager sound, Viewport vp){
+    public void handleInput(MotionEvent motionEvent,LevelManager lm, SoundManager sound, Viewport vp){
         int pointerCount = motionEvent.getPointerCount();
 
         for (int i = 0; i < pointerCount; i++) {
@@ -70,73 +70,44 @@ public class InputController {
             int x = (int) motionEvent.getX(i);
             int y = (int) motionEvent.getY(i);
 
-            if(l.isPlaying()) {
+            if(lm.isPlaying()) {
 
                 switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-
                     case MotionEvent.ACTION_DOWN:
-                        if (right.contains(x, y)) {
-                            l.player.setPressingRight(true);
-                            l.player.setPressingLeft(false);
-                        } else if (left.contains(x, y)) {
-                            l.player.setPressingLeft(true);
-                            l.player.setPressingRight(false);
-                        } else if (jump.contains(x, y)) {
-                            l.player.startJump(sound);
-                        } else if (shoot.contains(x, y)) {
-                            if (l.player.pullTrigger()) {
-                                sound.playSound("shoot");
-                            }
-                        } else if (pause.contains(x, y)) {
-                            l.switchPlayingStatus();
-
-                        }
-
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        if (right.contains(x, y)) {
-                            l.player.setPressingRight(false);
-                        } else if (left.contains(x, y)) {
-                            l.player.setPressingLeft(false);
-                        }
-
-
-                        break;
-
                     case MotionEvent.ACTION_POINTER_DOWN:
                         if (right.contains(x, y)) {
-                            l.player.setPressingRight(true);
-                            l.player.setPressingLeft(false);
+                            lm.player.setPressingRight(true);
+                            lm.player.setPressingLeft(false);
                         } else if (left.contains(x, y)) {
-                            l.player.setPressingLeft(true);
-                            l.player.setPressingRight(false);
+                            lm.player.setPressingLeft(true);
+                            lm.player.setPressingRight(false);
                         } else if (jump.contains(x, y)) {
-                            l.player.startJump(sound);
+                            lm.player.startJump(sound);
                         } else if (shoot.contains(x, y)) {
-                            if (l.player.pullTrigger()) {
-                                sound.playSound("shoot");
-                            }
+                            // handle shooting here
                         } else if (pause.contains(x, y)) {
-                            l.switchPlayingStatus();
+                            lm.switchPlayingStatus();
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_POINTER_UP:
+                        if (right.contains(x, y)) {
+                            lm.player.setPressingRight(false);
+                        } else if (left.contains(x, y)) {
+                            lm.player.setPressingLeft(false);
                         }
                         break;
 
-                    case MotionEvent.ACTION_POINTER_UP:
-                        if (right.contains(x, y)) {
-                            l.player.setPressingRight(false);
-                        } else if (left.contains(x, y)) {
-                            l.player.setPressingLeft(false);
-                        }
-                        break;
                 }
-            }else {// Not playing
+            }//end LM.ISPLAYING
+
+            else {// Not playing
                 //Move the viewport around to explore the map
                 switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
 
                     case MotionEvent.ACTION_DOWN:
                         if (right.contains(x, y)) {
-                            vp.moveViewportRight(l.mapWidth);
+                            vp.moveViewportRight(lm.mapWidth);
                             //Log.w("right:", "DOWN" );
                         } else if (left.contains(x, y)) {
                             vp.moveViewportLeft();
@@ -145,10 +116,10 @@ public class InputController {
                             vp.moveViewportUp();
                             //Log.w("jump:", "DOWN" );/
                         } else if (shoot.contains(x, y)) {
-                            vp.moveViewportDown(l.mapHeight);
+                            vp.moveViewportDown(lm.mapHeight);
                             //Log.w("shoot:", "DOWN" );/
                         } else if (pause.contains(x, y)) {
-                            l.switchPlayingStatus();
+                            lm.switchPlayingStatus();
                             //Log.w("pause:", "DOWN" );
                         }
 
